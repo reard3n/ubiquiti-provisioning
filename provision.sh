@@ -32,7 +32,7 @@ function waitForDevice {
 	while [ $ONLINE -lt 1 ]
 	do
 		echo "[Step $STEP of $STEPS]    Unit is still offline. Waiting for it to come up."
-		ONLINE=`ping -c1 -w2 192.168.1.20 2>&1 | grep -c "1 packets received"`
+		ONLINE=`ping -c1 -w2 $REMOTEIP 2>&1 | grep -c "1 packets received"`
 		sleep 1
 	done
 }
@@ -45,7 +45,7 @@ echo "[Step 1 of 3]    Unit is online. Beginning firmware update."
 sleep 20
 
 # update the firmware
-sshpass -p$PASSWORD scp $SSHOPTS $FIRMWARE ubnt@192.168.1.20:/tmp/fwupdate.bin 2>&1 > /dev/null
+sshpass -p$PASSWORD scp $SSHOPTS $FIRMWARE ubnt@$REMOTEIP:/tmp/fwupdate.bin 2>&1 > /dev/null
 sshpass -p$PASSWORD ssh $SSHOPTS ubnt@$REMOTEIP "/sbin/fwupdate -m" 2>&1 > /dev/null
 STEP=2
 
