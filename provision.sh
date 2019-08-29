@@ -1,6 +1,6 @@
 #!/bin/bash
 
-rm /tmp/ident
+rm /tmp/ident 2>&1 > /dev/null
 touch /tmp/ident
 chmod 700 /tmp/ident
 
@@ -12,13 +12,18 @@ STEP=1
 STEPS=3
 
 # do we need to download the latest firmware?
+echo "[Step 0 of $STEPS]    PREFLIGHT - searching for latest firmware version."
 FWDLPATH=`curl -s -H "Accept: text/json" -H "x-requested-with: XMLHttpRequest" https://www.ui.com/download/?group=litebeam-ac-gen2 | jq | grep file_path | tail -1 | awk -F":" '{print $2}' | awk -F'"' '{print $2}'`
 FWNAME=`echo $FWDLPATH | awk -F"/" '{print $NF}'`
+FWEXISTS=`ls -l ./$FWNAME | grep -c $FWNAME`
+echo "[Step 0 of $STEPS]    PREFLIGHT - Latest version $FWNAME found from ui.com."
 
-if [ $FWNAME != $FIRMWARE ]
+if [ $FWEXISTS -lt 1 ]
 then
-	echo "You need to download the latest firmware version, $FWNAME"
-	exit
+	echo "[Step 0 of $STEPS]    PREFLIGHT - $FWNAME does not exist on local disk. Downloading it now."
+	curl -L -s -o $FWNAME https://www.ui.com$FWDLPATH
+else
+	echo "[Step 0 of $STEPS]    PREFLIGHT - $FWNAME exists on local disk. Ready to go."
 fi
 
 function waitForDevice {
